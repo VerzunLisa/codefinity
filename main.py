@@ -1,27 +1,19 @@
-import numpy as np
-import pandas as pd
-from sklearn.preprocessing import OrdinalEncoder, OneHotEncoder
+import scipy.spatial.distance as dist
+import scipy.cluster.hierarchy as sch
+import matplotlib.pyplot as plt
+from sklearn.datasets import make_blobs
 
-# Creating a dataset
-data = pd.DataFrame({
-    'Age': [25, np.nan, 30, 35, np.nan],
-    'City': ['New York', 'London', 'Paris', 'Berlin', 'London'],
-    'Income': ['Low', 'Middle', 'High', 'High', 'Middle']
-})
+# Generating synthetic dataset
+data, _ = make_blobs(n_samples=10, centers=3, cluster_std=1.0, random_state=42)
 
 # Write your code below
-data['Age'] = data['Age'].apply(lambda x: data['Age'].mean() if np.isnan(x) else x)
+distance_matrix = dist.pdist(data, metric='euclidean')
+linkage_matrix = sch.linkage(distance_matrix, method='single')
 
-city_encoder = OneHotEncoder(drop='first')
-city_encoded = city_encoder.fit_transform(data[['City']])
-city_encoded_df = pd.DataFrame(city_encoded.toarray(), columns=city_encoder.categories_[0][1:])
-
-income_encoder = OrdinalEncoder(categories=[['Low', 'Middle', 'High']])
-data['Income'] = income_encoder.fit_transform(data[['Income']])
-
-# Combining the encoded columns with the original data
-data = pd.concat([data, city_encoded_df], axis=1)
-data.drop('City', axis=1, inplace=True)
-
-# Testing the result
-print(data)
+# Plotting the dendrogram
+plt.figure(figsize=(8, 5))
+sch.dendrogram(linkage_matrix, labels=range(len(data)))
+plt.xlabel("Data Points")
+plt.ylabel("Distance")
+plt.title("Hierarchical Clustering Dendrogram")
+plt.show()
