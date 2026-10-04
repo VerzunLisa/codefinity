@@ -1,24 +1,27 @@
-from sklearn.neighbors import KNeighborsClassifier
-from sklearn.preprocessing import StandardScaler
-import pandas as pd
-from sklearn.model_selection import GridSearchCV
+import numpy as np
+import matplotlib.pyplot as plt
+from sklearn.datasets import make_blobs
+from sklearn.cluster import KMeans
 
-df = pd.read_csv('https://codefinity-content-media.s3.eu-west-1.amazonaws.com/b71ff7ac-3932-41d2-a4d8-060e24b00129/starwars_binary.csv')
+# Generating synthetic dataset
+data, _ = make_blobs(n_samples=300, centers=3, cluster_std=1.0, random_state=42)
 
-X = df.drop('StarWars6', axis=1)
-y = df['StarWars6']
+# Initialize the model and predict cluster labels
+kmeans = KMeans(n_clusters=3, random_state=42, n_init='auto')
+labels = kmeans.fit_predict(data)
 
-scaler = StandardScaler()
-X = scaler.fit_transform(X)
+# Plotting the clustered data
+plt.figure(figsize=(8, 5))
 
-knn = KNeighborsClassifier()
+clusters = []
+for i in range(3):
+    # Extract cluster points for cluster `i`
+    cluster_points = data[labels==i]
+    clusters.append(cluster_points)
+    plt.scatter(cluster_points[:, 0], cluster_points[:, 1], label=f"Cluster {i}", alpha=0.7)
 
-# Write your code below
-param_grid = {'n_neighbors': [3, 9, 18, 27]}
-grid_search = GridSearchCV(estimator=knn,param_grid=param_grid, cv=4)
-grid_search.fit(X, y)
-best_model = grid_search.best_estimator_
-best_score = grid_search.best_score_
-
-print(best_model)
-print(best_score)
+plt.xlabel("Feature 1")
+plt.ylabel("Feature 2")
+plt.title("K-Means Clustering on Synthetic Data")
+plt.legend()
+plt.show()
